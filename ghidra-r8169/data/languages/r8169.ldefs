@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language_definitions>
+  <language processor="Realtek r8169 bytecode"
+            endian="little"
+            size="16"
+            variant="default"
+            version="0.1"
+            slafile="r8169.sla"
+            processorspec="r8169.pspec"
+            id="r8169:LE:16:default">
+    <description>Realtek r8169 bytecode</description>
+    <compiler name="default" spec="r8169.cspec" id="default"/>
+  </language>
+</language_definitions>

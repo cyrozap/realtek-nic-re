@@ -1,0 +1,78 @@
+define endian=little;
+define alignment=4;
+
+define space IM type=ram_space size=2 default;
+define space PHY type=ram_space size=2;
+define space MAC_MCU type=ram_space size=2;
+define space dummy type=ram_space size=1;
+
+define space register type=register_space size=1;
+
+define register offset=0 size=2 [
+	ax  # Accumulator
+	cx  # Counter
+
+	pc
+	sp  # Dummy stack pointer to make the decompiler work.
+];
+
+define register offset=0x10 size=4 [
+	contextreg
+];
+
+define context contextreg
+	mdio_is_mac_mcu = (0, 0) dec
+;
+
+define token instr(32)
+	op       = (28, 31)
+	addr12   = (16, 27)
+	imm16    = (0, 15)
+	imm16_2  = (0, 15)
+;
+
+define pcodeop mdio_chg;
+define pcodeop delay_ms;
+
+# PHY_READ
+:ldr ax, [#addr12] is op=0x0 & addr12 & ax & mdio_is_mac_mcu=0 { ax = *[PHY]addr12:2; cx = cx + 1; }
+:ldr ax, [#addr12] is op=0x0 & addr12 & ax & mdio_is_mac_mcu=1 { ax = *[MAC_MCU]addr12:2; cx = cx + 1; }
+
+# PHY_DATA_OR
+:or ax, #imm16 is op=0x1 & addr12 & imm16 & ax { ax = ax | imm16; }
+
+# PHY_DATA_AND
+:and ax, #imm16 is op=0x2 & addr12 & imm16 & ax { ax = ax & imm16; }
+
+# PHY_BJMPN
+:j #jump_dest is op=0x3 & addr12 [ jump_dest = inst_start - (addr12 * 4); ] { goto [jump_dest:2]; }
+
+# PHY_MDIO_CHG
+:mdio_chg #imm16 is op=0x4 & addr12 & imm16 & imm16_2=0 [ mdio_is_mac_mcu = 0; globalset(inst_next, mdio_is_mac_mcu); ] { mdio_chg(imm16:2); }
+:mdio_chg #imm16 is op=0x4 & addr12 & imm16 [ mdio_is_mac_mcu = 1; globalset(inst_next, mdio_is_mac_mcu); ] { mdio_chg(imm16:2); }
+
+# PHY_CLEAR_READCOUNT
+:clr cx is op=0x7 & cx { cx = 0; }
+
+# PHY_WRITE
+:str #imm16, [#addr12] is op=0x8 & addr12 & imm16 & mdio_is_mac_mcu=0 { *[PHY]:2 addr12:2 = imm16; }
+:str #imm16, [#addr12] is op=0x8 & addr12 & imm16 & mdio_is_mac_mcu=1 { *[MAC_MCU]:2 addr12:2 = imm16; }
+
+# PHY_READCOUNT_EQ_SKIP
+:beq cx, #imm16, #jump_dest is op=0x9 & imm16 & cx [ jump_dest = inst_next + 4; ] { if !(cx == imm16) goto inst_next; goto [jump_dest:2]; }
+
+# PHY_COMP_EQ_SKIPN
+:beq ax, #imm16, #jump_dest is op=0xa & addr12 & imm16 & ax [ jump_dest = inst_next + (addr12 * 4); ] { if !(ax == imm16) goto inst_next; goto [jump_dest:2]; }
+
+# PHY_COMP_NEQ_SKIPN
+:bne ax, #imm16, #jump_dest is op=0xb & addr12 & imm16 & ax [ jump_dest = inst_next + (addr12 * 4); ] { if !(ax != imm16) goto inst_next; goto [jump_dest:2]; }
+
+# PHY_WRITE_PREVIOUS
+:str ax, [#addr12] is op=0xc & addr12 & ax & mdio_is_mac_mcu=0 { *[PHY]:2 addr12:2 = ax; }
+:str ax, [#addr12] is op=0xc & addr12 & ax & mdio_is_mac_mcu=1 { *[MAC_MCU]:2 addr12:2 = ax; }
+
+# PHY_SKIPN
+:j #jump_dest is op=0xd & addr12 & imm16 [ jump_dest = inst_next + (addr12 * 4); ] { goto [jump_dest:2]; }
+
+# PHY_DELAY_MS
+:delay_ms #imm16 is op=0xe & imm16 { delay_ms(imm16:2); }

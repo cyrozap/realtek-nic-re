@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<processor_spec>
+  <programcounter register="pc"/>
+
+  <context_data>
+    <context_set space="IM">
+      <set name="mdio_is_mac_mcu" val="0" description="0 for PHY, 1 for MAC_MCU"/>
+    </context_set>
+  </context_data>
+
+  <default_symbols>
+    <symbol name="Start" address="IM:0x0000" entry="true" type="code"/>
+  </default_symbols>
+
+  <default_memory_blocks>
+    <memory_block name="PHY" start_address="PHY:0" length="0x1000" mode="rwv" initialized="false"/>
+    <memory_block name="MAC_MCU" start_address="MAC_MCU:0" length="0x1000" mode="rwv" initialized="false"/>
+  </default_memory_blocks>
+</processor_spec>

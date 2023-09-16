@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<compiler_spec>
+  <global>
+    <range space="IM"/>
+    <range space="PHY"/>
+    <range space="MAC_MCU"/>
+    <range space="dummy"/>
+  </global>
+
+  <!-- This is just a dummy stack pointer to make the decompiler work. -->
+  <stackpointer register="sp" space="dummy"/>
+
+  <!-- This architecture doesn't have functions, but the decompiler needs a default_proto to work. -->
+  <default_proto>
+    <prototype extrapop="0" stackshift="0" strategy="register" name="__stdcall">
+      <input>
+        <pentry minsize="1" maxsize="2" extension="inttype">
+          <register name="ax"/>
+        </pentry>
+      </input>
+      <output>
+        <pentry minsize="1" maxsize="2" extension="inttype">
+          <register name="ax"/>
+        </pentry>
+      </output>
+    </prototype>
+  </default_proto>
+</compiler_spec>
