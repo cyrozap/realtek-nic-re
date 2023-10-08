@@ -93,6 +93,14 @@ def main():
                 print("    0x{:04x}".format(bp))
             print("  info: {}".format(data.info))
             extract_data(args.firmware, "rtl_fw_phy_nc.{}".format(block.data.info), block.data.data)
+        elif block.type == r8152_fw.R8152Fw.FwType.rtl_fw_phy_speed_up:
+            data = block.data
+            print("rtl_fw_phy_speed_up:")
+            print("  fw_offset: 0x{:04x}".format(data.fw_offset))
+            print("  version: 0x{:04x}".format(data.version))
+            print("  fw_reg: 0x{:04x}".format(data.fw_reg))
+            print("  info: {}".format(data.info))
+            extract_data(args.firmware, "rtl_fw_phy_speed_up.{}".format(block.data.info), block.data.data)
         elif block.type == r8152_fw.R8152Fw.FwType.rtl_fw_phy_stop:
             print("rtl_fw_phy_stop")
         elif block.type == r8152_fw.R8152Fw.FwType.rtl_fw_end:
